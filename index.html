@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clasificación de Riesgo Crediticio</title>
+    <style>
+        /* Estilos CSS (Sin cambios, es lo que enviaste) */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        .container {
+            max-width: 950px; /* Ancho ajustado para más campos */
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #0056b3;
+        }
+        form {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr); /* 3 columnas */
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: block;
+        }
+        input[type="text"], input[type="number"], select {
+            width: calc(100% - 10px);
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            grid-column: 1 / 4; /* Botón abarca 3 columnas */
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #results {
+            grid-column: 1 / 4; 
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            border: 1px solid #ced4da;
+        }
+        #results p {
+            margin: 5px 0;
+        }
+        .prediction-0 {
+            color: green;
+            font-weight: bold;
+        }
+        .prediction-1 {
+            color: red;
+            font-weight: bold;
+        }
+        .error {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .section-heading {
+            grid-column: 1 / 4;
+            text-align: center;
+            background-color: #f0f0f0;
+            padding: 5px;
+            margin-top: 10px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Clasificador de Riesgo Crediticio</h1>
+        <p>Introduce los datos del cliente para predecir su riesgo de Default (0: Bajo Riesgo, 1: Alto Riesgo).</p>
+        
+        <form id="creditRiskForm">
+            <div class="section-heading"><h3>Datos Financieros Clave (Numéricos)</h3></div>
+            
+            <div>
+                <label for="loan_amount">Monto del Préstamo:</label>
+                <input type="number" id="loan_amount" name="loan_amount" value="250000" required>
+            </div>
+            
+            <div>
+                <label for="rate_of_interest">Tasa de Interés:</label>
+                <input type="number" id="rate_of_interest" name="rate_of_interest" step="0.01" value="4.0" required>
+            </div>
+
+            <div>
+                <label for="term">Plazo (meses):</label>
+                <input type="number" id="term" name="term" value="360" required>
+            </div>
+
+            <div>
+                <label for="income">Ingresos Mensuales:</label>
+                <input type="number" id="income" name="income" value="7000" required>
+            </div>
+
+            <div>
+                <label for="Credit_Score">Puntuación Crediticia:</label>
+                <input type="number" id="Credit_Score" name="Credit_Score" value="750" required>
+            </div>
+            
+            <div>
+                <label for="Interest_rate_spread">Diferencial de Tasa:</label>
+                <input type="number" id="Interest_rate_spread" name="Interest_rate_spread" step="0.01" value="0.5" required>
+            </div>
+
+            <div>
+                <label for="Upfront_charges">Cargos Iniciales:</label>
+                <input type="number" id="Upfront_charges" name="Upfront_charges" value="1500" required>
+            </div>
+
+            <div>
+                <label for="property_value">Valor de la Propiedad:</label>
+                <input type="number" id="property_value" name="property_value" value="400000" required>
+            </div>
+
+            <div>
+                <label for="LTV">LTV (%):</label>
+                <input type="number" id="LTV" name="LTV" step="0.1" value="62.5" required>
+            </div>
+
+            <div>
+                <label for="dtir1">DTIR (Ratio Deuda/Ingreso):</label>
+                <input type="number" id="dtir1" name="dtir1" step="0.1" value="30.0" required>
+            </div>
+
+
+            <div class="section-heading"><h3>Características del Préstamo (Categóricos)</h3></div>
+            
+            <div>
+                <label for="Gender">Género:</label>
+                <select id="Gender" name="Gender" required>
+                    <option value="Male">Masculino</option>
+                    <option value="Female">Femenino</option>
+                    <option value="Sex Not Available">No disponible</option>
+                </select>
+            </div>
+            
+            <div>
+                <label for="loan_limit">Límite de Préstamo:</label>
+                <select id="loan_limit" name="loan_limit" required>
+                    <option value="cf">Con Límite</option>
+                    <option value="ncf">Sin Límite</option>
+                </select>
+            </div>
+            
+            <div>
+                <label for="approv_in_adv">Aprobación Anticipada:</label>
+                <select id="approv_in_adv" name="approv_in_adv" required>
+                    <option value="nopc">No</option>
+                    <option value="pbc">Sí</option>
+                </select>
+            </div>
+            
+            <div>
+                <label for="loan_type">Tipo de Préstamo:</label>
+                <select id="loan_type" name="loan_type" required>
+                    <option value="type1">Tipo 1</option>
+                    <option value="type2">Tipo 2</option>
+                    <option value="type3">Tipo 3</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="loan_purpose">Propósito:</label>
+                <select id="loan_purpose" name="loan_purpose" required>
+                    <option value="p1">Propósito 1</option>
+                    <option value="p2">Propósito 2</option>
+                    <option value="p3">Propósito 3</option>
+                    <option value="p4">Propósito 4</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="Credit_Worthiness">Solvencia:</label>
+                <select id="Credit_Worthiness" name="Credit_Worthiness" required>
+                    <option value="fully credit worthy">Solvente</option>
+                    <option value="not fully credit worthy">No Solvente</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="open_credit">Crédito Abierto:</label>
+                <select id="open_credit" name="open_credit" required>
+                    <option value="open_credit">Sí</option>
+                    <option value="nopc">No</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="business_or_commercial">Buss. o Comm.:</label>
+                <select id="business_or_commercial" name="business_or_commercial" required>
+                    <option value="nob/c">No Comercial</option>
+                    <option value="b/c">Comercial</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="Neg_ammortization">Neg Amortization:</label>
+                <select id="Neg_ammortization" name="Neg_ammortization" required>
+                    <option value="not_neg_amort">No</option>
+                    <option value="neg_amort">Sí</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="interest_only">Solo Intereses:</label>
+                <select id="interest_only" name="interest_only" required>
+                    <option value="not_int_only">No</option>
+                    <option value="int_only">Sí</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="lump_sum_payment">Pago Global:</label>
+                <select id="lump_sum_payment" name="lump_sum_payment" required>
+                    <option value="not_lump">No</option>
+                    <option value="lump_sum">Sí</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="construction_type">Tipo Construcción:</label>
+                <select id="construction_type" name="construction_type" required>
+                    <option value="sb">Sitio Stick</option>
+                    <option value="mh">Manufacturado</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="occupancy_type">Tipo Ocupación:</label>
+                <select id="occupancy_type" name="occupancy_type" required>
+                    <option value="pr">Primaria</option>
+                    <option value="ir">Inversión</option>
+                    <option value="sr">Secundaria</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="Secured_by">Asegurado por:</label>
+                <select id="Secured_by" name="Secured_by" required>
+                    <option value="home">Vivienda</option>
+                    <option value="land">Terreno</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="total_units">Unidades Totales:</label>
+                <select id="total_units" name="total_units" required>
+                    <option value="1U">1 Unidad</option>
+                    <option value="2U">2 Unidades</option>
+                    <option value="3U">3 Unidades</option>
+                    <option value="4U">4 Unidades</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="credit_type">Tipo Crédito:</label>
+                <select id="credit_type" name="credit_type" required>
+                    <option value="CIB">CIB</option>
+                    <option value="EXP">EXP</option>
+                    <option value="CRIF">CRIF</option>
+                    <option value="EQUI">EQUI</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="co-applicant_credit_type">Crédito Co-aplicante:</label>
+                <select id="co-applicant_credit_type" name="co-applicant_credit_type" required>
+                    <option value="CIB">CIB</option>
+                    <option value="EXP">EXP</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="age">Rango de Edad:</label>
+                <select id="age" name="age" required>
+                    <option value="25-34">25-34</option>
+                    <option value="35-44">35-44</option>
+                    <option value="45-54">45-54</option>
+                    <option value="55-64">55-64</option>
+                    <option value="65-74">65-74</option>
+                    <option value="25">25</option>
+                    <option value=">74">>74</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="submission_of_application">Envío Solicitud:</label>
+                <select id="submission_of_application" name="submission_of_application" required>
+                    <option value="to_inst">A Institución</option>
+                    <option value="not_inst">No a Institución</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="Region">Región:</label>
+                <select id="Region" name="Region" required>
+                    <option value="South">Sur</option>
+                    <option value="North">Norte</option>
+                    <option value="North-East">Noreste</option>
+                    <option value="Central">Central</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="Security_Type">Tipo Seguridad:</label>
+                <select id="Security_Type" name="Security_Type" required>
+                    <option value="Direct">Directa</option>
+                    <option value="Indirect">Indirecta</option>
+                </select>
+            </div>
+            
+            <button type="submit">Predecir Riesgo</button>
+        </form>
+
+        <div id="results">
+            <h2>Resultados de la Predicción:</h2>
+            <p>Estado de la predicción: <span id="predictionStatus">Esperando datos...</span></p>
+            <p>Probabilidad de NO Default (0): <span id="probaNoDefault">N/A</span></p>
+            <p>Probabilidad de Default (1): <span id="probaDefault">N/A</span></p>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('creditRiskForm');
+        const predictionStatus = document.getElementById('predictionStatus');
+        const probaNoDefault = document.getElementById('probaNoDefault');
+        const probaDefault = document.getElementById('probaDefault');
+        
+        // Lista de columnas que deben ser tratadas como números (float)
+        const NUMERIC_FIELDS = ['loan_amount', 'rate_of_interest', 'Interest_rate_spread', 'Upfront_charges', 'term', 'property_value', 'income', 'Credit_Score', 'LTV', 'dtir1'];
+
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const formData = new FormData(form);
+            const data = {};
+            
+            // Recopilar y convertir datos
+            formData.forEach((value, key) => {
+                // Convertir a float si el campo está en la lista de numéricos
+                if (NUMERIC_FIELDS.includes(key)) {
+                    // Usar parseFloat para manejar decimales
+                    data[key] = parseFloat(value);
+                } else {
+                    data[key] = value;
+                }
+            });
+
+            try {
+                // Usamos 127.0.0.1:5000 que es donde corre tu API
+                const response = await fetch('http://127.0.0.1:5000/credit_risk', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    predictionStatus.textContent = result.prediction === 0 ? '0 (Bajo Riesgo)' : '1 (Alto Riesgo)';
+                    predictionStatus.className = result.prediction === 0 ? 'prediction-0' : 'prediction-1';
+                    probaNoDefault.textContent = (result.probability_no_default * 100).toFixed(2) + '%';
+                    probaDefault.textContent = (result.probability_default * 100).toFixed(2) + '%';
+                } else {
+                    // Si la API responde con un error 400 o 500
+                    predictionStatus.textContent = `Error: ${result.error}`;
+                    predictionStatus.className = 'error';
+                    probaNoDefault.textContent = 'N/A';
+                    probaDefault.textContent = 'N/A';
+                    console.error('Error de la API:', result.detalles || result.error);
+                }
+
+            } catch (error) {
+                // Error de red (CORS, servidor caído, etc.)
+                predictionStatus.textContent = 'Error de conexión con la API.';
+                predictionStatus.className = 'error';
+                probaNoDefault.textContent = 'N/A';
+                probaDefault.textContent = 'N/A';
+                console.error('Error de red o API no disponible:', error);
+            }
+        });
+    </script>
+</body>
+</html>
