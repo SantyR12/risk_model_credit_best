@@ -1,5 +1,7 @@
-Flask
+streamlit
+flask
 pandas
-scikit-learn
-joblib
+requests
 numpy
+joblib
+scikit-learn
